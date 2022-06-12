@@ -1,6 +1,6 @@
-const bcrypt = require("bcrypt");
-const fs = require("fs");
-const jwt = require("jsonwebtoken");
+// const bcrypt = require("bcrypt");
+// const fs = require("fs");
+// const jwt = require("jsonwebtoken");
 const SECRET = "my secret";
 function generateToken(data) {
   const token = jwt.sign(data, SECRET, { expiresIn: 64000 });

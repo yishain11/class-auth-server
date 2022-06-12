@@ -1,6 +1,9 @@
 const http = require("http");
 const fs = require("fs");
 const auth = require("../services/auth");
+const authModule = require("../services/new_auth");
+const jwt = require("jsonwebtoken");
+const SECRET = "my secret string";
 
 const server = http.createServer(async (req, res) => {
   const { url, method, headers } = req;
@@ -12,7 +15,29 @@ const server = http.createServer(async (req, res) => {
       fs.createReadStream("../views/home/home.js").pipe(res);
       break;
     case "/login":
-      fs.createReadStream("../views/login/login.html").pipe(res);
+      switch (method) {
+        case "GET":
+          fs.createReadStream("../views/login/login.html").pipe(res);
+          break;
+        case "POST":
+          const buffers = [];
+          for await (const chunk of req) {
+            buffers.push(chunk);
+          }
+          const data = JSON.parse(Buffer.concat(buffers).toString());
+          const user = data.username;
+          const pass = data.password;
+          const results = await authModule.comparePasswords(user, pass);
+          let token;
+          if (results) {
+            token = jwt.sign({ name: user, isAuthenticated: true }, SECRET, {
+              expiresIn: "1h",
+            });
+            console.log("token", token);
+          }
+          res.end(JSON.stringify({ msg: `login res is: ${results}` }));
+          break;
+      }
       break;
     case "/login.js":
       fs.createReadStream("../views/login/login.js").pipe(res);
@@ -28,9 +53,11 @@ const server = http.createServer(async (req, res) => {
             buffers.push(chunk);
           }
           const data = JSON.parse(Buffer.concat(buffers).toString());
-          console.log("data in signin", data);
           const user = data.username;
           const pass = data.password;
+          const hashed = await authModule.hashPassword(pass);
+          authModule.storeUserData(user, hashed);
+          res.end(JSON.stringify({ msg: "user stored" }));
           break;
       }
       break;

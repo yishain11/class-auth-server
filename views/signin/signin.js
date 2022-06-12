@@ -1,7 +1,6 @@
 const form = document.getElementById("f");
 document.addEventListener("submit", (e) => {
   e.preventDefault();
-  document.cookie;
   const data = new FormData(form);
   const dataJson = {};
   for (const [key, val] of data.entries()) {
@@ -15,8 +14,11 @@ document.addEventListener("submit", (e) => {
   })
     .then((res) => res.json())
     .then((res) => {
-      if (res.msg) {
-        window.location = "/";
-      }
+      console.log("res", res);
+      const msgDiv = document.getElementById("msg");
+      msgDiv.innerText = res.msg;
+      // if (res.msg) {
+      //   window.location = "/";
+      // }
     });
 });
