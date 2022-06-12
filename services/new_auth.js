@@ -1,5 +1,6 @@
 const fs = require("fs");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 function readUsers() {
   const users = JSON.parse(fs.readFileSync("../data/users.json", "utf-8"));
@@ -33,4 +34,14 @@ async function comparePasswordsHash(userPassword, hashedPasword) {
   return res;
 }
 
-module.exports = { storeUserData, hashPassword, comparePasswords };
+function checkToken(token, secret) {
+  try {
+    const res = jwt.verify(token, secret);
+    return true;
+  } catch (error) {
+    console.log("error", error);
+    return false;
+  }
+}
+
+module.exports = { checkToken, storeUserData, hashPassword, comparePasswords };

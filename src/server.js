@@ -28,14 +28,21 @@ const server = http.createServer(async (req, res) => {
           const user = data.username;
           const pass = data.password;
           const results = await authModule.comparePasswords(user, pass);
-          let token;
+          let isToken = false;
           if (results) {
-            token = jwt.sign({ name: user, isAuthenticated: true }, SECRET, {
-              expiresIn: "1h",
+            const token = jwt.sign(
+              { name: user, isAuthenticated: true },
+              SECRET,
+              {
+                expiresIn: "1h",
+              }
+            );
+            isToken = true;
+            res.writeHead(302, {
+              "Set-Cookie": `token=${token};path=/`,
             });
-            console.log("token", token);
           }
-          res.end(JSON.stringify({ msg: `login res is: ${results}` }));
+          res.end(JSON.stringify({ msg: `login res is: ${results}`, isToken }));
           break;
       }
       break;
@@ -65,7 +72,24 @@ const server = http.createServer(async (req, res) => {
       fs.createReadStream("../views/signin/signin.js").pipe(res);
       break;
     case "/private":
-      fs.createReadStream("../views/private/private.html").pipe(res);
+      const cookie = headers.cookie;
+      console.log("cookie", cookie);
+      if (!cookie) {
+        res.writeHead(302, {
+          location: "/login",
+        });
+        res.end();
+      } else {
+        const token = cookie.replace("token=", "");
+        const tokenResults = authModule.checkToken(token, SECRET);
+        if (tokenResults) {
+          fs.createReadStream("../views/private/private.html").pipe(res);
+        } else {
+          res.writeHead(302, {
+            location: "/login",
+          });
+        }
+      }
       break;
     case "/private.js":
       fs.createReadStream("../views/private/private.js").pipe(res);

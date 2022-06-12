@@ -10,9 +10,10 @@ document.addEventListener("submit", (e) => {
     method: "POST",
     body: JSON.stringify(dataJson),
   })
-    .then((res) => res.text())
+    .then((res) => res.json())
     .then((res) => {
-      console.log("res", res);
-      // window.location = "/";
+      if (res.isToken) {
+        window.location = "/";
+      }
     });
 });
