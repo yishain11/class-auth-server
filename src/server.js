@@ -73,7 +73,6 @@ const server = http.createServer(async (req, res) => {
       break;
     case "/private":
       const cookie = headers.cookie;
-      console.log("cookie", cookie);
       if (!cookie) {
         res.writeHead(302, {
           location: "/login",

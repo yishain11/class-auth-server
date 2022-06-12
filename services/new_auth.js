@@ -39,7 +39,6 @@ function checkToken(token, secret) {
     const res = jwt.verify(token, secret);
     return true;
   } catch (error) {
-    console.log("error", error);
     return false;
   }
 }
