@@ -31,8 +31,6 @@ const server = http.createServer(async (req, res) => {
           console.log("data in signin", data);
           const user = data.username;
           const pass = data.password;
-          await auth.genPassword(user, pass);
-          res.end(JSON.stringify({ msg: "signed in" }));
           break;
       }
       break;
@@ -40,25 +38,7 @@ const server = http.createServer(async (req, res) => {
       fs.createReadStream("../views/signin/signin.js").pipe(res);
       break;
     case "/private":
-      if (!headers.cookie) {
-        res.writeHead(302, {
-          location: "/login",
-        });
-        res.end();
-        return;
-      } else {
-        const token = headers.cookie.replace("token=", "");
-        const authRes = auth.checkToken(token);
-        if (authRes) {
-          fs.createReadStream("../views/private/private.html").pipe(res);
-        } else {
-          res.writeHead(302, {
-            location: "/login",
-          });
-          res.end();
-          return;
-        }
-      }
+      fs.createReadStream("../views/private/private.html").pipe(res);
       break;
     case "/private.js":
       fs.createReadStream("../views/private/private.js").pipe(res);
@@ -69,23 +49,8 @@ const server = http.createServer(async (req, res) => {
         buffers.push(chunk);
       }
       const data = JSON.parse(Buffer.concat(buffers).toString());
-      console.log("data in auth", data);
       const user = data.username;
-      console.log("user in auth", user);
       const pass = data.password;
-      console.log("pass in auth", pass);
-      const response = await auth.checkPassword(user, pass);
-      if (!response) {
-        res.writeHead(302, { location: "/signin" });
-        return;
-      } else {
-        const token = auth.generateToken({ msg: "hi token" });
-        res.writeHead(302, {
-          "Set-Cookie": `token=${token};path=/`,
-        });
-        res.end(token);
-        return;
-      }
   }
 });
 
